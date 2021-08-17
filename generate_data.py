@@ -1,56 +1,28 @@
 import numpy as np
 from astropy.io import fits
 import pandas as pd
+import os
 
-dir_path = "/home/carlo/SKAData/"
+dir_path = "./SKAData/"
 
-# Divide the fits image in 50x50 images
-fits_img = fits.open(dir_path + "SKAMid_B1_8h_v3.fits")
-#print(fits_img.info())
-fits_img=fits_img[0].data[0,0,16300:20300,16300:20300]
-
-img_array = np.empty((0,50,50))
-
-a = -1
-b = -1
-
-# Perché 4000??
-for i in range(0,4000,50):
-    a+=1
-    for j in range(0,4000,50):
-        b+=1
-        #print(a,b)
-        img_array = np.append(img_array,[fits_img[i:i+50,j:j+50]], axis=0)
-
-# Save the generated images
-np.save(dir_path + "img_array.npy",img_array)
-
+cutout_size = 218
+image_size = 32700
 
 # Get the data from the training set 
-TrainingSet=pd.read_csv(dir_path + "TrainingSet_B1_v2.txt",skiprows=17,delimiter='\s+')
-TrainingSet=TrainingSet[TrainingSet.columns[0:15]]
-TrainingSet.columns=['ID','RA (core)','DEC (core)','RA (centroid)','DEC (centroid)','FLUX','Core frac','BMAJ','BMIN','PA','SIZE','CLASS','SELECTION','x','y']
-TrainingSet['x']=TrainingSet['x'].astype(int)
-TrainingSet['y']=TrainingSet['y'].astype(int)
-TrainingSet['x']=TrainingSet['x']-16300
-TrainingSet['y']=TrainingSet['y']-16300
-
-data=np.zeros((4000,4000,1), dtype=np.uint8 )
+TrainingSet=pd.read_csv(dir_path + "filtered_training_set.csv")
+data=np.zeros((image_size,image_size), dtype=np.uint8 )
 for i in range(0,len(TrainingSet)):
-	    data[int(TrainingSet['y'][i:i+1]),int(TrainingSet['x'][i:i+1])] = 1
+	    data[int(TrainingSet['y'][i]),int(TrainingSet['x'][i])] = 1
 
-# divide data in 50x50 matrix
-a = -1
-b = -1
+# divide data in 218x218 matrix
 
-data=data.reshape(data.shape[0],data.shape[1])
-data_array = np.empty((0,50,50))
+if not os.path.isdir(dir_path+"data_cutouts/"):
+    os.mkdir(dir_path+"data_cutouts/")
 
-for i in range(0,4000,50):
-    a+=1
-    for j in range(0,4000,50):
-        b+=1
-        data_array = np.append(data_array,[data[i+0:i+50,j+0:j+50]], axis=0)
+for i in range(0,image_size,cutout_size):
+    print(i//cutout_size)
+    for j in range(0,image_size,cutout_size):
+        #data_array = np.append(data_array,[data[i:i+cutout_size,j:j+cutout_size]], axis=0)
+        data_array = data[i:i+cutout_size,j:j+cutout_size]
+        np.save(dir_path + "data_cutouts/data_array_{:d}_{:d}.npy".format(i//cutout_size,j//cutout_size),data_array)
 
-# save the generated data
-np.save(dir_path + "data_array.npy",data_array)
