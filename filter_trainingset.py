@@ -17,8 +17,8 @@ TrainingSet=TrainingSet[TrainingSet.columns[0:15]]
 TrainingSet.columns=['ID','RA (core)','DEC (core)','RA (centroid)','DEC (centroid)','FLUX','Core frac','BMAJ','BMIN','PA','SIZE','CLASS','SELECTION','x','y']
 TrainingSet['x']=TrainingSet['x'].astype(int)
 TrainingSet['y']=TrainingSet['y'].astype(int)
-TrainingSet['x']=TrainingSet['x']-16350
-TrainingSet['y']=TrainingSet['y']-16350
+#TrainingSet['x']=TrainingSet['x']-16350
+#TrainingSet['y']=TrainingSet['y']-16350
 TrainingSet = TrainingSet.set_index('ID')
 initial_len = len(TrainingSet)
 print(initial_len) # === 274883
